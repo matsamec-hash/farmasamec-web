@@ -15,9 +15,21 @@ export default async function DashboardPage() {
 
   const farmIds = memberships?.map((m) => m.farm_id) ?? [];
 
-  const { data: farms } = farmIds.length
-    ? await supabase.from('farms').select('*').in('id', farmIds)
-    : { data: [] };
+  const [farmsResult, parcelsCountResult] = await Promise.all([
+    farmIds.length
+      ? supabase.from('farms').select('*').in('id', farmIds)
+      : { data: [] },
+    farmIds.length
+      ? supabase.from('parcels').select('id, vymera', { count: 'exact' }).in('farm_id', farmIds)
+      : { data: [], count: 0 },
+  ]);
+
+  const farms = farmsResult.data;
+  const parcelCount = parcelsCountResult.count ?? 0;
+  const totalHa = (parcelsCountResult.data ?? []).reduce(
+    (sum: number, p: { vymera: number | null }) => sum + (p.vymera ?? 0),
+    0,
+  );
 
   return (
     <div>
@@ -75,11 +87,11 @@ export default async function DashboardPage() {
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Parcely', value: '—', icon: '🗺️' },
-            { label: 'Zvířata', value: '—', icon: '🐄' },
-            { label: 'Stroje', value: '—', icon: '🚜' },
-            { label: 'Úkoly', value: '—', icon: '📋' },
-          ].map(({ label, value, icon }) => (
+            { label: 'Parcely', value: parcelCount > 0 ? `${parcelCount}` : '—', icon: '🗺️', sub: parcelCount > 0 ? `${totalHa.toFixed(1)} ha` : undefined },
+            { label: 'Zvířata', value: '—', icon: '🐄', sub: undefined },
+            { label: 'Stroje', value: '—', icon: '🚜', sub: undefined },
+            { label: 'Úkoly', value: '—', icon: '📋', sub: undefined },
+          ].map(({ label, value, icon, sub }) => (
             <div
               key={label}
               className="rounded-xl bg-white border border-gray-100 shadow-sm p-4"
@@ -87,6 +99,7 @@ export default async function DashboardPage() {
               <p className="text-2xl mb-1">{icon}</p>
               <p className="text-xl font-bold text-gray-800">{value}</p>
               <p className="text-xs text-gray-500">{label}</p>
+              {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
             </div>
           ))}
         </div>
