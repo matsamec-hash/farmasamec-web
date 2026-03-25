@@ -6,6 +6,7 @@ import { OperaceList } from './OperaceList';
 import { OperaceNewForm } from './OperaceNewForm';
 import { NBilanceDashboard } from './NBilanceDashboard';
 import { Plus, BarChart3 } from 'lucide-react';
+import { CsvDownloadButton } from '@/components/ui/CsvDownloadButton';
 import { cn } from '@/lib/utils';
 
 type Tab = 'list' | 'n-bilance';
@@ -40,13 +41,16 @@ export function OperaceClientPage({ farms, operations: initialOps, parcels }: Pr
           <h1 className="text-2xl font-bold text-gray-800 mb-0.5">Operace na poli</h1>
           <p className="text-sm text-gray-500">{filteredOps.length} záznamů</p>
         </div>
-        <button
-          onClick={() => setShowNewForm(true)}
-          className="flex items-center gap-2 bg-[#7c9a6e] hover:bg-[#6a8860] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={15} />
-          Nová operace
-        </button>
+        <div className="flex items-center gap-2">
+          <CsvDownloadButton dataset="operace" farmId={selectedFarmId} year={new Date().getFullYear()} />
+          <button
+            onClick={() => setShowNewForm(true)}
+            className="flex items-center gap-2 bg-[#7c9a6e] hover:bg-[#6a8860] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus size={15} />
+            Nová operace
+          </button>
+        </div>
       </div>
 
       {/* Farm filter + tab switcher */}

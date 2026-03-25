@@ -13,6 +13,31 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { FeatureCollection, Feature, Polygon, MultiPolygon } from 'geojson';
 import { KULTURA_LABELS, KULTURA_COLORS } from '@/lib/shared/kulturaCodes';
 import type { Parcel, Farm } from './ParcelsClientPage';
+import { cn } from '@/lib/utils';
+
+// ČÚZK / LPIS WMS layers
+const WMS_LAYERS = [
+  {
+    id: 'ortofoto',
+    label: 'Ortofoto',
+    url: 'https://ags.cuzk.cz/arcgis1/services/ORTOFOTO/MapServer/WMSServer',
+    layers: '0',
+  },
+  {
+    id: 'lpis',
+    label: 'LPIS',
+    url: 'https://eagri.cz/public/app/wms/public_DPB_PB_OPV.fcgi',
+    layers: 'DPB_PB_OPV',
+  },
+  {
+    id: 'nvz',
+    label: 'NVZ zóny',
+    url: 'https://eagri.cz/public/app/wms/public_nvz.fcgi',
+    layers: 'NVZ_ZASAZENOST_PARCELY',
+  },
+] as const;
+
+type WmsLayerId = typeof WMS_LAYERS[number]['id'];
 
 // Czech Republic center
 const DEFAULT_VIEW = { longitude: 15.8, latitude: 49.8, zoom: 7 };
@@ -33,6 +58,7 @@ interface Props {
 export function ParcelsMap({ parcels, farms, selectedParcelId, onSelectParcel }: Props) {
   const mapRef = useRef<MapRef>(null);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
+  const [activeWms, setActiveWms] = useState<Set<WmsLayerId>>(new Set());
 
   const farmMap = useMemo(
     () => Object.fromEntries(farms.map((f) => [f.id, f])),
@@ -114,8 +140,34 @@ export function ParcelsMap({ parcels, farms, selectedParcelId, onSelectParcel }:
     [parcels, onSelectParcel],
   );
 
+  function toggleWms(id: WmsLayerId) {
+    setActiveWms(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
   return (
-    <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm" style={{ height: 600 }}>
+    <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm relative" style={{ height: 600 }}>
+      {/* WMS layer toggles */}
+      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+        {WMS_LAYERS.map(layer => (
+          <button
+            key={layer.id}
+            onClick={() => toggleWms(layer.id)}
+            className={cn(
+              'px-2.5 py-1 rounded-lg text-xs font-medium shadow-sm border transition-colors',
+              activeWms.has(layer.id)
+                ? 'bg-[#7c9a6e] text-white border-[#7c9a6e]'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400',
+            )}
+          >
+            {layer.label}
+          </button>
+        ))}
+      </div>
+
       <Map
         ref={mapRef}
         initialViewState={DEFAULT_VIEW}
@@ -126,6 +178,26 @@ export function ParcelsMap({ parcels, farms, selectedParcelId, onSelectParcel }:
         style={{ width: '100%', height: '100%' }}
       >
         <NavigationControl position="top-right" />
+
+        {/* WMS layers */}
+        {WMS_LAYERS.filter(l => activeWms.has(l.id)).map(layer => (
+          <Source
+            key={layer.id}
+            id={`wms-${layer.id}`}
+            type="raster"
+            tiles={[
+              `${layer.url}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&LAYERS=${layer.layers}&CRS=EPSG:3857&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}`,
+            ]}
+            tileSize={256}
+          >
+            <Layer
+              id={`wms-layer-${layer.id}`}
+              type="raster"
+              paint={{ 'raster-opacity': layer.id === 'ortofoto' ? 1 : 0.6 }}
+              beforeId={layer.id === 'ortofoto' ? 'parcels-fill' : undefined}
+            />
+          </Source>
+        ))}
 
         {geojson.features.length > 0 && (
           <Source id="parcels" type="geojson" data={geojson}>

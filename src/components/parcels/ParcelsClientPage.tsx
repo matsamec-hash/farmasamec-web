@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react';
 import { ParcelsMap } from './ParcelsMap';
 import { ParcelsTable } from './ParcelsTable';
 import { Badge } from '@/components/ui/badge';
-import { Map, Table2 } from 'lucide-react';
+import { Map, Table2, Download } from 'lucide-react';
+import { CsvDownloadButton } from '@/components/ui/CsvDownloadButton';
 import { cn } from '@/lib/utils';
 
 export interface Farm {
@@ -66,6 +67,8 @@ export function ParcelsClientPage({ farms, parcels }: Props) {
           </p>
         </div>
 
+        <div className="flex items-center gap-2">
+        <CsvDownloadButton dataset="parcely" farmId={selectedFarmId} />
         {/* View toggle */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
           <button
@@ -92,6 +95,7 @@ export function ParcelsClientPage({ farms, parcels }: Props) {
             <Map size={15} />
             Mapa
           </button>
+        </div>
         </div>
       </div>
 

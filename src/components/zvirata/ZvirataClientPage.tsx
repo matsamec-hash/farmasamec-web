@@ -7,6 +7,7 @@ import { AnimalTable } from './AnimalTable';
 import { CalvingCalendar } from './CalvingCalendar';
 import { cn } from '@/lib/utils';
 import { CalendarDays } from 'lucide-react';
+import { CsvDownloadButton } from '@/components/ui/CsvDownloadButton';
 
 type Tab = 'list' | 'calendar';
 
@@ -67,6 +68,8 @@ export function ZvirataClientPage({ farms, herds, animals, upcomingCalvings }: P
           </p>
         </div>
 
+        <div className="flex items-center gap-2">
+        <CsvDownloadButton dataset="zvirata" farmId={selectedFarmId} />
         {/* Tab toggle */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
           <button
@@ -93,6 +96,7 @@ export function ZvirataClientPage({ farms, herds, animals, upcomingCalvings }: P
               </span>
             )}
           </button>
+        </div>
         </div>
       </div>
 
