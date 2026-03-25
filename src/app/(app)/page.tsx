@@ -15,12 +15,21 @@ export default async function DashboardPage() {
 
   const farmIds = memberships?.map((m) => m.farm_id) ?? [];
 
-  const [farmsResult, parcelsCountResult] = await Promise.all([
+  const [farmsResult, parcelsCountResult, animalsCountResult, machinesCountResult, tasksCountResult] = await Promise.all([
     farmIds.length
       ? supabase.from('farms').select('*').in('id', farmIds)
       : { data: [] },
     farmIds.length
       ? supabase.from('parcels').select('id, vymera', { count: 'exact' }).in('farm_id', farmIds)
+      : { data: [], count: 0 },
+    farmIds.length
+      ? supabase.from('animals').select('id', { count: 'exact' }).in('farm_id', farmIds).eq('status', 'active')
+      : { data: [], count: 0 },
+    farmIds.length
+      ? supabase.from('machines').select('id', { count: 'exact' }).in('farm_id', farmIds)
+      : { data: [], count: 0 },
+    farmIds.length
+      ? supabase.from('tasks').select('id', { count: 'exact' }).in('farm_id', farmIds).eq('status', 'pending')
       : { data: [], count: 0 },
   ]);
 
@@ -30,6 +39,9 @@ export default async function DashboardPage() {
     (sum: number, p: { vymera: number | null }) => sum + (p.vymera ?? 0),
     0,
   );
+  const animalCount = animalsCountResult.count ?? 0;
+  const machineCount = machinesCountResult.count ?? 0;
+  const taskCount = tasksCountResult.count ?? 0;
 
   return (
     <div>
@@ -88,9 +100,9 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'Parcely', value: parcelCount > 0 ? `${parcelCount}` : '—', icon: '🗺️', sub: parcelCount > 0 ? `${totalHa.toFixed(1)} ha` : undefined },
-            { label: 'Zvířata', value: '—', icon: '🐄', sub: undefined },
-            { label: 'Stroje', value: '—', icon: '🚜', sub: undefined },
-            { label: 'Úkoly', value: '—', icon: '📋', sub: undefined },
+            { label: 'Zvířata', value: animalCount > 0 ? `${animalCount}` : '—', icon: '🐄', sub: undefined },
+            { label: 'Stroje', value: machineCount > 0 ? `${machineCount}` : '—', icon: '🚜', sub: undefined },
+            { label: 'Úkoly', value: taskCount > 0 ? `${taskCount}` : '—', icon: '📋', sub: taskCount > 0 ? 'nevyřízených' : undefined },
           ].map(({ label, value, icon, sub }) => (
             <div
               key={label}
