@@ -26,14 +26,14 @@ const WMS_LAYERS = [
   {
     id: 'lpis',
     label: 'LPIS',
-    url: 'https://eagri.cz/public/app/wms/public_DPB_PB_OPV.fcgi',
-    layers: 'DPB_PB_OPV',
+    url: 'https://mze.gov.cz/public/app/wms/public_DPB_PB_OPV.fcgi',
+    layers: 'DPB_A2',
   },
   {
-    id: 'nvz',
-    label: 'NVZ zóny',
-    url: 'https://eagri.cz/public/app/wms/public_nvz.fcgi',
-    layers: 'NVZ_ZASAZENOST_PARCELY',
+    id: 'katastr',
+    label: 'Katastr',
+    url: 'https://services.cuzk.cz/wms/wms.asp',
+    layers: 'parcely_KN',
   },
 ] as const;
 
