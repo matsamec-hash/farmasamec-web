@@ -8,6 +8,7 @@ import {
   Tractor,
   Wheat,
   Map,
+  MapPinned,
   Settings,
   ChevronDown,
   LogOut,
@@ -42,6 +43,7 @@ const NAV_ITEMS = [
   { label: 'Přehled', href: '/', icon: LayoutDashboard },
   { label: 'Zvířata', href: '/zvirata', icon: Leaf },
   { label: 'Pole & Parcely', href: '/pole', icon: Map },
+  { label: 'Katastr', href: '/katastr', icon: MapPinned },
   { label: 'Operace na poli', href: '/operace', icon: Wheat },
   { label: 'Stroje', href: '/stroje', icon: Tractor },
   { label: 'Kalendář', href: '/kalendar', icon: CalendarDays },
@@ -90,6 +92,7 @@ export function AppSidebar({ userEmail }: AppSidebarProps) {
               return (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton
+                    render={<Link href={href} />}
                     isActive={isActive}
                     className={cn(
                       'rounded-lg transition-colors',
@@ -98,10 +101,8 @@ export function AppSidebar({ userEmail }: AppSidebarProps) {
                         : 'text-gray-600 hover:bg-gray-100',
                     )}
                   >
-                    <Link href={href} className="flex items-center gap-3 px-3 py-2 w-full">
-                      <Icon size={17} />
-                      <span className="text-sm">{label}</span>
-                    </Link>
+                    <Icon size={17} />
+                    <span className="text-sm">{label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
